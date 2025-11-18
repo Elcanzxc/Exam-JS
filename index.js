@@ -299,6 +299,53 @@ function renderTaskList() {
     });
     
 }
+
+const addTaskForm = document.getElementById('addTaskForm');
+if (addTaskForm) {
+    addTaskForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        const title = document.getElementById('title').value;
+        const description = document.getElementById('description').value;
+        
+        const titleError = document.getElementById('titleError');
+        const descriptionError = document.getElementById('descriptionError');
+        
+       
+        if (titleError) titleError.textContent = '';
+        if (descriptionError) descriptionError.textContent = '';
+
+        let isValid = true;
+
+        if (!Validator.validateTitle(title)) {
+            if (titleError) {
+                titleError.textContent = 'Название должно содержать минимум 2 слова, не может состоять только из чисел';
+            }
+            isValid = false;
+        }
+
+        if (!Validator.validateDescription(description, title)) {
+            if (descriptionError) {
+                descriptionError.textContent = 'Описание должно содержать минимум 1 слово и не совпадать с названием';
+            }
+            isValid = false;
+        }
+
+        if (isValid) {
+          
+            const task = new Task(title.trim(), description.trim());
+            
+           
+            taskList.addTask(task);
+            
+          
+            addTaskForm.reset();
+            
+            
+            renderTaskList();
+        }
+    });
+}
         
 
         renderTaskList();
