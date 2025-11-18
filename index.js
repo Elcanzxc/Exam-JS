@@ -78,3 +78,100 @@ class Task {
         return task;
     }
 }
+
+
+
+
+
+class TaskList {
+    #tasks;
+
+    constructor() {
+        this.#tasks = [];
+        this.loadFromStorage();
+    }
+
+    addTask(task) {
+        this.#tasks.push(task);
+        this.saveToStorage();
+    }
+
+    removeTask(id) {
+        this.#tasks = this.#tasks.filter(task => task.getId() !== id);
+        this.saveToStorage();
+    }
+
+    getTaskById(id) {
+        return this.#tasks.find(task => task.getId() === id);
+    }
+
+    updateTask(id, title, description) {
+        const task = this.getTaskById(id);
+        if (task) {
+            task.setTitle(title);
+            task.setDescription(description);
+            this.saveToStorage();
+        }
+    }
+
+    toggleTaskCompleted(id) {
+        const task = this.getTaskById(id);
+        if (task) {
+            task.toggleCompleted();
+            this.saveToStorage();
+        }
+    }
+
+    getAllTasks() {
+        return [...this.#tasks];
+    }
+
+    getFilteredTasks(filter) {
+        switch(filter) {
+            case 'completed':
+                return this.#tasks.filter(task => task.isCompleted());
+            case 'uncompleted':
+                return this.#tasks.filter(task => !task.isCompleted());
+            default:
+                return this.#tasks;
+        }
+    }
+
+    getSortedTasks(tasks, sortBy) {
+        const tasksCopy = [...tasks];
+        
+        if (sortBy === 'date') {
+            return tasksCopy.sort((a, b) => {
+                const dateA = this.#parseDate(a.getCreatedAt());
+                const dateB = this.#parseDate(b.getCreatedAt());
+                return dateB - dateA;
+            });
+        } else if (sortBy === 'name') {
+            return tasksCopy.sort((a, b) => 
+                a.getTitle().localeCompare(b.getTitle(), 'ru')
+            );
+        }
+        
+        return tasksCopy;
+    }
+
+    #parseDate(dateStr) {
+        const [datePart, timePart] = dateStr.split(' ');
+        const [day, month, year] = datePart.split('.');
+        const [hours, minutes, seconds] = timePart.split(':');
+        return new Date(year, month - 1, day, hours, minutes, seconds);
+    }
+
+    saveToStorage() {
+        const tasksJSON = this.#tasks.map(task => task.toJSON());
+        localStorage.setItem('tasks', JSON.stringify(tasksJSON));
+    }
+
+    loadFromStorage() {
+        const tasksJSON = localStorage.getItem('tasks');
+        if (tasksJSON) {
+            const parsed = JSON.parse(tasksJSON);
+            this.#tasks = parsed.map(json => Task.fromJSON(json));
+        }
+    }
+}
