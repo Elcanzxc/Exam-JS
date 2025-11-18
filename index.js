@@ -178,7 +178,31 @@ class TaskList {
 
 
 
+class Validator {
+    static validateTitle(title) {
 
+       
+        const pattern = /^(?!(?:\s*\d+\s*)+$)(?=(?:\s*[a-zA-Z]+\s*|\s*[а-яА-ЯёЁ]+\s*|\s*\d+\s*)+$)(?:[a-zA-Z]{1,16}|[а-яА-ЯёЁ]{1,16}|\d{1,16})(?:\s(?:[a-zA-Z]{1,16}|[а-яА-ЯёЁ]{1,16}|\d{1,16}))+$/;
+       
+        return pattern.test(title.trim());
+    }
+
+    static validateDescription(description, title) {
+
+      
+        const wordPattern = /^(?:[a-zA-Z]{1,16}|[а-яА-ЯёЁ]{1,16}|\d{1,16})(?:\s+(?:[a-zA-Z]{1,16}|[а-яА-ЯёЁ]{1,16}|\d{1,16}))*$/;
+        
+        const trimmedDesc = description.trim();
+        const trimmedTitle = title.trim();
+        
+       
+        if (!wordPattern.test(trimmedDesc)) {
+            return false;
+        }
+       
+        return trimmedDesc !== trimmedTitle;
+    }
+}
 
 
 document.addEventListener('DOMContentLoaded', () =>
@@ -186,6 +210,97 @@ document.addEventListener('DOMContentLoaded', () =>
         const taskList = new TaskList();
         let currentFilter = 'all';
         let currentSort = 'date';
+
+
         
+
+function renderTaskList() {
+
+    const taskListEl = document.getElementById('taskList');
+    const filteredTasks = taskList.getFilteredTasks(currentFilter);
+    const sortedTasks = taskList.getSortedTasks(filteredTasks, currentSort);
+
+
+    taskListEl.textContent = ''; 
+
+    if (sortedTasks.length === 0) {
+        const p = document.createElement('p');
+        p.style.textAlign = 'center';
+        p.style.color = '#888';
+        p.style.padding = '20px';
+        p.textContent = 'Нет задач';
+        taskListEl.appendChild(p);
+        return;
+    }
+
+
+    sortedTasks.forEach(task => {
+        const li = document.createElement('li');
+        li.classList.add('task-item');
+        if (task.isCompleted()) {
+            li.classList.add('completed');
+        }
+
+     
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.classList.add('task-checkbox');
+        checkbox.checked = task.isCompleted();
+        checkbox.dataset.id = task.getId();
+
+       
+        checkbox.addEventListener('change', (e) => {
+            taskList.toggleTaskCompleted(e.target.dataset.id);
+            renderTaskList();
+        });
+
+       
+        const titleLink = document.createElement('a');
+        titleLink.href = `details.html?id=${task.getId()}`;
+        titleLink.classList.add('task-title');
+    
+        titleLink.textContent = task.getTitle(); 
+
+       
+        const actionsDiv = document.createElement('div');
+        actionsDiv.classList.add('task-actions');
+
+       
+        const editLink = document.createElement('a');
+        editLink.href = `edit.html?id=${task.getId()}`;
+        editLink.classList.add('btn', 'btn-secondary', 'btn-edit');
+        editLink.textContent = 'Изменить';
+
+     
+        const deleteButton = document.createElement('button');
+        deleteButton.classList.add('btn', 'btn-danger', 'btn-delete');
+        deleteButton.dataset.id = task.getId();
+        deleteButton.textContent = 'Удалить';
+
+       
+        deleteButton.addEventListener('click', (e) => {
+            if (confirm('Вы уверены, что хотите удалить эту задачу?')) {
+                taskList.removeTask(e.target.dataset.id);
+                renderTaskList();
+            }
+        });
+
+        
+        actionsDiv.appendChild(editLink);
+        actionsDiv.appendChild(deleteButton);
+
+     
+        li.appendChild(checkbox);
+        li.appendChild(titleLink);
+        li.appendChild(actionsDiv);
+
+      
+        taskListEl.appendChild(li);
+    });
+    
+}
+        
+
+        renderTaskList();
 });
 
