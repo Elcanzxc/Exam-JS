@@ -175,3 +175,17 @@ class TaskList {
         }
     }
 }
+
+
+
+
+
+
+document.addEventListener('DOMContentLoaded', () =>
+{
+        const taskList = new TaskList();
+        let currentFilter = 'all';
+        let currentSort = 'date';
+        
+});
+
