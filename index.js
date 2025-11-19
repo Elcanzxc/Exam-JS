@@ -153,21 +153,33 @@ class TaskList {
     }
 }
 
+
 class Validator {
+
     static validateTitle(title) {
-        const pattern = /^(?!(?:\s*\d+\s*)+$)(?=(?:\s*[a-zA-Z]+\s*|\s*[а-яА-ЯёЁ]+\s*|\s*\d+\s*)+$)(?:[a-zA-Z]{1,16}|[а-яА-ЯёЁ]{1,16}|\d{1,16})(?:\s(?:[a-zA-Z]{1,16}|[а-яА-ЯёЁ]{1,16}|\d{1,16}))+$/;
-        return pattern.test(title.trim());
+
+        const word = '(?:[a-zA-Z]{1,16}|[а-яА-ЯёЁ]{1,16}|\\d{1,16})';
+
+        const notOnlyNumbers = `(?!(?:\\d{1,16}(?:\\s\\d{1,16})*)$)`;
+
+        const patternString = `^${notOnlyNumbers}${word}(?:\\s${word})+$`;
+
+        const pattern = new RegExp(patternString);
+        return pattern.test(title);
     }
 
     static validateDescription(description, title) {
-        const wordPattern = /^(?:[a-zA-Z]{1,16}|[а-яА-ЯёЁ]{1,16}|\d{1,16})(?:\s+(?:[a-zA-Z]{1,16}|[а-яА-ЯёЁ]{1,16}|\d{1,16}))*$/;
-        const trimmedDesc = description.trim();
-        const trimmedTitle = title.trim();
+        const word = '(?:[a-zA-Z]{1,16}|[а-яА-ЯёЁ]{1,16}|\\d{1,16})';
+
+        const patternString = `^${word}(?:\\s${word})*$`;
         
-        if (!wordPattern.test(trimmedDesc)) {
+        const pattern = new RegExp(patternString);
+
+        if (!pattern.test(description)) {
             return false;
         }
-        return trimmedDesc !== trimmedTitle;
+
+        return description.trim() !== title.trim();
     }
 }
 
